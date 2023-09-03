@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "stock-monitoring": {
+      "commandName": "Project",
+      "commandLineArgs": "PETR4 22,48 22,44"
+    }
+  }
+}
