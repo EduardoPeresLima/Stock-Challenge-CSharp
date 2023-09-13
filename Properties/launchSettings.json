@@ -2,7 +2,8 @@
   "profiles": {
     "stock-monitoring": {
       "commandName": "Project",
-      "commandLineArgs": "PETR4 22,48 22,44"
+      "commandLineArgs": "PETR4 22,48 22,44",
+      "workingDirectory": "C:\\Users\\Pedro\\OneDrive\\Área de Trabalho\\Github\\Stock-Challenge-CSharp\\Publish"
     }
   }
 }

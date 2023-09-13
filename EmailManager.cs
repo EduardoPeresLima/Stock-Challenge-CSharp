@@ -9,17 +9,12 @@ namespace stock_monitoring
     internal class EmailManager
     {
 
-        private EmailSenderConfiguration emailConfig;
+        public EmailSenderConfiguration emailConfig;
         public EmailTemplates emailTemplates;
-        public EmailManager()
+        public EmailManager(string emailConfigPath, string emailTemplatesPath)
         {
-            //Get email configurations
-            string emailConfigJSON = File.ReadAllText(@"C:\Users\Pedro\OneDrive\Área de Trabalho\Github\email-configuration.json");
-            this.emailConfig = JsonConvert.DeserializeObject<EmailSenderConfiguration>(emailConfigJSON);
-
-            //Get email templates
-            string emailTemplatesJSON = File.ReadAllText(@"C:\Users\Pedro\OneDrive\Área de Trabalho\Github\email-templates.json");
-            this.emailTemplates = JsonConvert.DeserializeObject<EmailTemplates>(emailTemplatesJSON);
+            this.emailConfig = JsonConvert.DeserializeObject<EmailSenderConfiguration>(File.ReadAllText(emailConfigPath));
+            this.emailTemplates = JsonConvert.DeserializeObject<EmailTemplates>(File.ReadAllText(emailTemplatesPath));
         }
         public Exception SendEmail(EmailTemplate emailTemplate, string stock, float currentValue, float valueLimit)
         {
@@ -53,7 +48,8 @@ namespace stock_monitoring
             return null;
         }
         //Classes for Email Configuration. Read fromm a JSON Configuration File
-        private class EmailSenderConfiguration
+
+        public class EmailSenderConfiguration
         {
             public string serverSMTP { get; set; }
             public int serverPORT { get; set; }
@@ -61,9 +57,27 @@ namespace stock_monitoring
             public string senderEmail { get; set; }
             public string senderAppPassword { get; set; }
             public Emailrecipient[] emailRecipients { get; set; }
+            public bool IsValidJSON(string stringJSON)
+            {
+                string schemaJson = @"{
+                  'type': 'object',
+                  'properties':
+                  {
+                    'serverSMTP': {'type':'string'},
+                    'serverPORT': {'type':'number'},
+                    'serverSMTP': {'type':'string'},
+                    'serverSMTP': {'type':'string'},
+                    'hobbies': {
+                      'type': 'array',
+                      'items': {'type':'string'}
+                    }
+                  }
+                }";
+                return false;
+            }
         }
 
-        private class Emailrecipient
+        public class Emailrecipient
         {
             public string name { get; set; }
             public string email { get; set; }

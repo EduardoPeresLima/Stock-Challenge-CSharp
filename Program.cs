@@ -1,31 +1,42 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Net;
 
 namespace stock_monitoring
 {
     internal class Program
     {
-        public enum ValidArgsErrorCode
-        {
-            OK,
-            InvalidArgumentLength,
-            SellValueIsNaN,
-            BuyValueIsNaN,
-            BuyValueGreaterOrEqualSellValue,
-            StockNotFound,
-            APIError
-        }
         static void Main(string[] args)
         {
-            RealMain(args);
-            //TestMain(args);
-
-
-        }
-        public static void RealMain(string[] args)
-        {
-            EmailManager emailManager = new EmailManager();
-            APIService service = new APIService();
+            //Check if configuration files exist and are valid
+            string path = Directory.GetCurrentDirectory();
+            string emailConfigPath = path + @"\Configurations\email-configuration.json";
+            string emailTemplatesPath = path + @"\Configurations\email-templates.json";
+            ValidConfigJsons errorCodeSetup = CheckSetups(emailConfigPath, emailTemplatesPath);
+            if (errorCodeSetup != ValidConfigJsons.OK)
+            {
+                switch (errorCodeSetup)
+                {
+                    case ValidConfigJsons.ConfigPathNotFound:
+                        Console.WriteLine($"Email Config path not found: {emailConfigPath}.");
+                        break;
+                    case ValidConfigJsons.CouldntReadConfig:
+                        Console.WriteLine($"Couldn't read Email Config from path: {emailConfigPath}");
+                        break;
+                    case ValidConfigJsons.TemplatesPathNotFound:
+                        Console.WriteLine($"Email Templates path not found: {emailTemplatesPath}.");
+                        break;
+                    case ValidConfigJsons.CouldntReadTemplates:
+                        Console.WriteLine($"Couldn't read Email Templates from path: {emailTemplatesPath}.");
+                        break;
+                }
+                return;
+            }
+            
+            //Setup variables
+            APIService service = new APIService(); ;
+            EmailManager emailManager = new EmailManager(emailConfigPath, emailTemplatesPath);
+            
+            //Check if arguments given to the program are valid
             ValidArgsErrorCode errorCode = CheckValidArgs(service, args);
             if (errorCode != ValidArgsErrorCode.OK)
             {
@@ -54,29 +65,34 @@ namespace stock_monitoring
                 }
                 return;
             }
+            
+            
+            //Program Start
             string stock = args[0];
             float sellValue = float.Parse(args[1]), buyValue = float.Parse(args[2]);
             Console.WriteLine($"Monitoring stock '{stock}'!");
             Console.WriteLine($"Value to Sell: '{sellValue}'");
             Console.WriteLine($"Value to Buy: '{buyValue}'\n");
             int currentDataId = -1;
-            APIService.StockData allStockData = null;
 
             while (true)
             {
-                allStockData = service.GetStockData(stock);
+                APIService.StockData allStockData = service.GetStockData(stock);
                 if (allStockData != null)
                 {
                     var generalData = allStockData.results[0];
                     if (currentDataId == -1)
+                    {
                         currentDataId = (generalData.historicalDataPrice.Length - 1) - 15;
+                    }
+                        
                     string symbol = generalData.symbol;
                     string currency = generalData.currency;
                     var stockData = generalData.historicalDataPrice[currentDataId];
                     DateTime dateTime = GetDateTimeFromTimestamp(stockData.date);
 
                     Console.WriteLine(dateTime + ": " + symbol + " " + stockData.close + currency);
-                    if (stockData.close.HasValue) //Sometimes this value is null
+                    if (stockData.close.HasValue) //Sometimes this value is null on the API
                     {
                         float stockCurrentValue = stockData.close.Value;
                         if (stockData.close <= buyValue)
@@ -84,20 +100,16 @@ namespace stock_monitoring
                             Console.WriteLine("\tTime to Buy!");
                             Console.WriteLine("\tSending an email...");
                             Exception e = emailManager.SendEmail(emailManager.emailTemplates.buyAlert, stock, stockCurrentValue, buyValue);
-                            if (e == null)
-                                Console.WriteLine("\tEmail sent successfully!");
-                            else
-                                Console.WriteLine($"\tEmail not sent.\n Error: {e.Message}");
+                            
+                            Console.WriteLine(e == null ? "\tEmail sent successfully!" : $"\tEmail not sent.\n Error: {e.Message}");
                         }
                         else if (stockData.close >= sellValue)
                         {
                             Console.WriteLine("\tTime to Sell!");
                             Console.Write("\tSending an email...   ");
                             Exception e = emailManager.SendEmail(emailManager.emailTemplates.sellAlert, stock, stockCurrentValue, sellValue);
-                            if (e == null)
-                                Console.WriteLine("\tEmail sent successfully!");
-                            else
-                                Console.WriteLine($"\tEmail not sent.\n Error: {e.Message}");
+
+                            Console.WriteLine(e == null ? "\tEmail sent successfully!" : $"\tEmail not sent.\n Error: {e.Message}");
                         }
                     }
                 }
@@ -110,50 +122,13 @@ namespace stock_monitoring
                 currentDataId++;
             }
         }
-        public static void TestMain(string[] args)
-        {
-            APIService service = new APIService();
-            string stock = args[0];
-            float sellValue = float.Parse(args[1]), buyValue = float.Parse(args[2]);
-
-
-            int minuteMod15 = 0;
-            int currentDataId = -1;
-            APIService.StockData allStockData = null;
-            while (true)
-            {
-                allStockData = service.GetStockData(stock);
-                Console.Clear();
-                long curTimestamp = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds();
-                Console.WriteLine(curTimestamp + " " + GetDateTimeFromTimestamp(curTimestamp));
-                if (allStockData != null)
-                {
-                    string symbol = allStockData.results[0].symbol;
-                    int len = allStockData.results[0].historicalDataPrice.Length;
-                    Console.WriteLine(len);
-                    for (int i = len - 1, j = 0; j < 5; i--, j++)
-                    {
-                        var stockData = allStockData.results[0].historicalDataPrice[i];
-
-                        DateTime dateTime = GetDateTimeFromTimestamp(stockData.date);
-                        Console.WriteLine(stockData.date + " " + dateTime + ": " + symbol + " " + stockData.close);
-                    }
-
-                }
-                else
-                {
-                    Console.WriteLine("Error on reading data from API");
-                }
-
-                System.Threading.Thread.Sleep(10000);
-                currentDataId++;
-            }
-        }
+        //Auxiliar function
         public static DateTime GetDateTimeFromTimestamp(long timestamp)
         {
             DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             return dateTime.AddSeconds(timestamp).ToLocalTime();
         }
+        //Enums for check setup files and arguments before starting the program
         public static ValidArgsErrorCode CheckValidArgs(APIService service, string[] args)
         {
             if (args.Length != 3) return ValidArgsErrorCode.InvalidArgumentLength;
@@ -168,13 +143,35 @@ namespace stock_monitoring
 
             return ValidArgsErrorCode.OK;
         }
-        public void TestEmail()
+        public static ValidConfigJsons CheckSetups(string emailConfigPath, string emailTemplatesPath)
         {
-            EmailManager emailManager = new EmailManager();
-            var emailTemplates = emailManager.emailTemplates;
-            Console.WriteLine("Sending 'Sell Alert' e-mail");
-            emailManager.SendEmail(emailTemplates.sellAlert, "PETR4", 50.00f, 30.00f);
-            //emailManager.SendEmail(emailTemplates.buyAlert, "IBOVESPA", 15.00f, 20.00f);
+            if (!File.Exists(emailConfigPath)) return ValidConfigJsons.ConfigPathNotFound;
+            if (!File.Exists(emailTemplatesPath)) return ValidConfigJsons.TemplatesPathNotFound;
+            var emailConfig = JsonConvert.DeserializeObject<EmailManager.EmailSenderConfiguration>(File.ReadAllText(emailConfigPath));
+            if (emailConfig == null) return ValidConfigJsons.CouldntReadConfig;
+
+            var emailTemplates = JsonConvert.DeserializeObject<EmailManager.EmailTemplates>(File.ReadAllText(emailTemplatesPath));
+            if (emailTemplates == null) return ValidConfigJsons.CouldntReadTemplates;
+            return ValidConfigJsons.OK;
+        }
+        
+        public enum ValidArgsErrorCode
+        {
+            OK,
+            InvalidArgumentLength,
+            SellValueIsNaN,
+            BuyValueIsNaN,
+            BuyValueGreaterOrEqualSellValue,
+            StockNotFound,
+            APIError
+        }
+        public enum ValidConfigJsons
+        {
+            OK,
+            ConfigPathNotFound,
+            CouldntReadConfig,
+            TemplatesPathNotFound,
+            CouldntReadTemplates
         }
     }
 }
