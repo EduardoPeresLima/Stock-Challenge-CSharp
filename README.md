@@ -4,14 +4,14 @@ Stock Monitoring using C#, Visual Studio
 <details>
 <summary>How to run</summary>
 
-Go to `Releases > v1.0.0`
+Go to `Releases` and choose a release, in the case above `v1.0.0`
 ![Alt text](./Images/release-on-repository.png)
 
 Click on `stock-monitoring.rar` to download it
 ![Alt text](./Images/release-info.png)
 
 Extract the Folder `Publish` from `stock-monitoring.rar`.<br>
-Open `Publish/Configurations/email-configuration.json` and change the `emailRecipients` property to the email you want to receive the sell/buy alerts
+Open `Publish/Configurations/email-configuration.json` and change the `emailRecipients` property to the email you want to receive the sell/buy alerts<br>
 ![Alt text](./Images/release-email-recipients.png)
 
 Then, enter the Folder `Publish` on Terminal<br>
