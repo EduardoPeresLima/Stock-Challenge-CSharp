@@ -1,0 +1,13 @@
+{
+    "serverSMTP": "smtp.gmail.com",
+    "serverPORT": 587,
+    "senderName":"Eduardo Email Sender",
+    "senderEmail":"eduardo.email.sender64@gmail.com",
+    "senderAppPassword":"wtgymoapizgloxal",
+    "emailRecipients":[
+        {
+            "name":"Eduardo Pessoal",
+            "email": "pedroserep@gmail.com"
+        }
+    ]
+}
