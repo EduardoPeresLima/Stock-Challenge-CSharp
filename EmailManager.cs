@@ -57,24 +57,6 @@ namespace stock_monitoring
             public string senderEmail { get; set; }
             public string senderAppPassword { get; set; }
             public Emailrecipient[] emailRecipients { get; set; }
-            public bool IsValidJSON(string stringJSON)
-            {
-                string schemaJson = @"{
-                  'type': 'object',
-                  'properties':
-                  {
-                    'serverSMTP': {'type':'string'},
-                    'serverPORT': {'type':'number'},
-                    'serverSMTP': {'type':'string'},
-                    'serverSMTP': {'type':'string'},
-                    'hobbies': {
-                      'type': 'array',
-                      'items': {'type':'string'}
-                    }
-                  }
-                }";
-                return false;
-            }
         }
 
         public class Emailrecipient

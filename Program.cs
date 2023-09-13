@@ -118,7 +118,7 @@ namespace stock_monitoring
                     Console.WriteLine("Error on reading data from API");
                 }
 
-                System.Threading.Thread.Sleep(60000); //a minute
+                Thread.Sleep(60000); //a minute
                 currentDataId++;
             }
         }

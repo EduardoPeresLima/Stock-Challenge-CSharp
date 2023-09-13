@@ -55,6 +55,6 @@ Enter folder `Publish` in terminal<br>
 run `./stock-monitoring.exe <stock> <value to sell> <value to buy>`<br>
 Ex: `./stock-monitoring.exe PETR4 23.65 22.48`
 
-The program monitores the selected stock every minute, with delay between 15 - 30 minutes. That means that if you start the program at 13:30h, the initial monitored time can be between 13:00h and 13:15h, then the program monitores the following minutes<br>
-Ex: Started the program at 13:30h. The initial time the stock was consulted was 13:11h. Then the next minute it will show the stock value on 13:12h, then 13:13h, and so on.
+The program monitores the selected stock every minute, with delay between 20 - 45 minutes. That means that if you start the program at 13:30h, the initial monitored time can be between 12:45h and 13:10h, then the program monitores the following minutes<br>
+Ex: Started the program at 13:30h. The initial time the stock was consulted was 13:02h. Then the next minute it will show the stock value on 13:03h, then 13:04h, and so on.
 </details>
