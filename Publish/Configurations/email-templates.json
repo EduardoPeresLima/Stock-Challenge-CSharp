@@ -1,0 +1,10 @@
+{
+    "sellAlert":{
+        "title":"Stock '{0}' Sell Alert",
+        "body":"<h2>It is Time to Sell!</h2><br/>The stock <b>{0}</b> you are monitoring is priced <b>above</b> the limit you defined for sale!<br/><br/><b>Current Value: {1}</b><br/><br/><b>Value to Sell: {2}</b>"
+    },
+    "buyAlert":{
+        "title":"Stock '{0}' Buy Alert",
+        "body":"<h2>It is Time to Buy!</h2><br/>The stock <b>{0}</b> you are monitoring is priced <b>bellow</b> the limit you defined for purchase!<br/><br/><b>Current Value: {1}</b><br/><br/><b>Value to Buy: {2}</b>"
+    }
+}
